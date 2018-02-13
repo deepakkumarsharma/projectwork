@@ -297,22 +297,30 @@ public abstract class AbstractGraph implements Serializable, Cloneable, IGraph
     }
     
 
- //Feature addition 
+// Begin of Feature Addition 1  
 	ArrayList<INode> SelfRecursiveAR = new ArrayList<>();
-	HashMap<INode, ArrayList<INode>> BiDirectionalHM = new HashMap<>();
     public static boolean feature1enabled = false;
+ // End of Feature Addition 1      
+
+// Begin of Feature Addition 2  
+	HashMap<INode, ArrayList<INode>> BiDirectionalHM = new HashMap<>();
     public static boolean feature2enabled = false;
- //Feature addition   
+// End of Feature Addition 2   
     
     @Override
-    public boolean connect(IEdge e, INode start, Point2D startLocation, INode end, Point2D endLocation, Point2D[] transitionPoints)
+    public boolean connect(IEdge e, INode start, Point2D startLocation, INode end, Point2D endLocation,
+    		               Point2D[] transitionPoints)
     {
+    	// Begin of Feature Addition 1 & 2   
+    	// Check for Self Recursive and BiDirectional Relationship
     	boolean selfRecursive = feature1enabled  && (start!= null && end == null || start!= null && end == start);
     	boolean BiDirectional = feature2enabled && start!= null && end != null && 
     		 BiDirectionalHM.containsKey(end) && BiDirectionalHM.get(end).contains(start);
-    	
+    	 
     	if (!BiDirectional && (selfRecursive && !SelfRecursiveAR.contains(start) || !selfRecursive))
          { 
+    	// End of Feature Addition 1 & 2  	
+    		
         // Step 1 : find if node exist
         Collection<INode> allNodes = getAllNodes();
         if (start != null && !allNodes.contains(start))
@@ -340,7 +348,7 @@ public abstract class AbstractGraph implements Serializable, Cloneable, IGraph
             if(end != null )
             {
                 end.onConnectedEdge(e);
-  
+                    // Begin of Feature Addition 2
                 	if (BiDirectionalHM.containsKey(start))
                 	BiDirectionalHM.get(start).add(end);
                 	else 
@@ -349,24 +357,32 @@ public abstract class AbstractGraph implements Serializable, Cloneable, IGraph
     					nodes.add(end);
     					BiDirectionalHM.put(start, nodes);
     				}
+                	// End of Feature Addition 2
                 }    
             
+         // Begin of Feature Addition 1
             if (selfRecursive)
             	SelfRecursiveAR.add(start);
-                    	
+         // End of Feature Addition 1
+            
             return true;
         }
          }
-         else
+    	// Begin of Feature Addition 1     	
+         else        	 
          {
         if (selfRecursive)
-			JOptionPane.showMessageDialog(null, "Not more than one self recursive edge",
-					"Warning: Self Recursive Edge", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "More than one self recursive relationship is not allowed",
+					"Warning: Multiple self recursive Edges", JOptionPane.INFORMATION_MESSAGE);
+     // Begin of Feature Addition 1 
+     
+     // Begin of Feature Addition 2   
         else
         if (BiDirectional)
-        	JOptionPane.showMessageDialog(null, "BiDirectional edge not allowed", "Warning: BiDirectional Edge",
-					JOptionPane.INFORMATION_MESSAGE);
+        	JOptionPane.showMessageDialog(null, "BiDirectional relationships are not allowed", 
+        			"Warning: BiDirectional Edge", JOptionPane.INFORMATION_MESSAGE);
          }
+     // Begin of Feature Addition 2 	
         return false;
     }
     
@@ -377,6 +393,11 @@ public abstract class AbstractGraph implements Serializable, Cloneable, IGraph
         {
             INode startingNode = anEdgeToRemove.getStartNode();
             INode endingNode = anEdgeToRemove.getEndNode();
+            if (startingNode.equals(endingNode))
+            	SelfRecursiveAR.remove(startingNode);
+            if (BiDirectionalHM.containsKey(startingNode) 
+            		&& BiDirectionalHM.get(startingNode).contains(endingNode))
+				BiDirectionalHM.get(startingNode).remove(endingNode);
             startingNode.removeConnection(anEdgeToRemove);
             endingNode.removeConnection(anEdgeToRemove);
             this.edges.remove(anEdgeToRemove);

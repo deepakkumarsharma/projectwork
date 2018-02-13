@@ -21,17 +21,23 @@ import com.horstmann.violet.product.diagram.property.text.SingleLineText;
  */
 public class ClassNode extends ColorableNode
 {
+//Begin of Feature Addition 3	
+	public static boolean CBOenabled = false;
+//End of Feature Addition 3		
+	
 	/**
      * Construct a class node with a default size
      */
     public ClassNode()
-    {
+    {   
         super();
         name = new SingleLineText(NAME_CONVERTER);
         name.setAlignment(LineText.CENTER);
         attributes = new MultiLineText(PROPERTY_CONVERTER);
         methods = new MultiLineText(PROPERTY_CONVERTER);
+        cbo = new SingleLineText(NAME_CONVERTER); //Feature addition 3
         createContentStructure();
+        calculatecbo();   //Feature addition 3
     }
 
     protected ClassNode(ClassNode node) throws CloneNotSupportedException
@@ -40,10 +46,34 @@ public class ClassNode extends ColorableNode
         name = node.name.clone();
         attributes = node.attributes.clone();
         methods = node.methods.clone();
+        cbo = node.name.clone();   //Feature addition 3
         createContentStructure();
+        calculatecbo(); //Feature addition 3
     }
+       
 
-    @Override
+  // Begin of Feature addition 3    
+       protected void calculatecbo()     
+       {   
+    	   if(CBOenabled)
+    	   {   
+               Thread thread = new Thread(new Runnable()
+    		    {
+				public void run() 
+				{
+					LineText cboText = new SingleLineText();
+    	 			while (true) {
+						cboText.setText("CBO " + String.valueOf(getConnectedEdges().size()));    	 			
+						setcbo(cboText);
+    	 			}	
+				}
+				});
+			thread.start();
+	       }
+       }    	
+   // End of Feature addition 3     
+
+	@Override
     protected void beforeReconstruction()
     {
         super.beforeReconstruction();
@@ -60,10 +90,19 @@ public class ClassNode extends ColorableNode
         {
             methods = new MultiLineText();
         }
+        
+ // Begin of Feature addition 3      
+        if (null == cbo)
+        {
+        	cbo = new SingleLineText();
+        }
+ // End of Feature addition 3  
+        
         name.reconstruction(NAME_CONVERTER);
         attributes.reconstruction(PROPERTY_CONVERTER);
         methods.reconstruction(PROPERTY_CONVERTER);
         name.setAlignment(LineText.CENTER);
+        cbo.reconstruction(NAME_CONVERTER); //Feature addition 3
     }
 
     @Override
@@ -113,6 +152,7 @@ public class ClassNode extends ColorableNode
         name.setTextColor(textColor);
         attributes.setTextColor(textColor);
         methods.setTextColor(textColor);
+        cbo.setTextColor(textColor);
         super.setTextColor(textColor);
     }
 
@@ -181,11 +221,24 @@ public class ClassNode extends ColorableNode
     {
         return methods;
     }
-
+    
+    public void setcbo(LineText newValue)
+    {
+        methods.setText(newValue);
+    }
+  
+  //Feature addition 3  
+    public LineText getcbo()
+    {
+        return cbo;
+    }
+  //Feature addition 3
+    
     private SingleLineText name;
     private MultiLineText attributes;
     private MultiLineText methods;
-
+    private SingleLineText cbo;      //Feature addition 3
+    
     private transient Separator separator;
 
     private static final int MIN_NAME_HEIGHT = 45;
